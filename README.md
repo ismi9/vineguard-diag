@@ -26,8 +26,9 @@
 ## Структура
 
 ```
-api/diagnose.js            Vercel serverless: Vision-діагноз → JSON-картка
-api/system_prompt.js       системний промпт (CommonJS, для serverless)
+app/main.py                FastAPI-бекенд (Vercel, Python): POST /api/diagnose
+app/prompt.py              системний промпт (новий-2 + новий-4)
+backend-node/              альтернативний Node-бекенд (web-standard export)
 schema/diagnostic_card.schema.json   JSON Schema картки
 schema/few_shots/          3 few-shot картки-приклади
 web/                       статичне демо (GitHub Pages): index.html, app.js
@@ -43,11 +44,19 @@ GitHub Pages: https://ismi9.github.io/vineguard-diag/
 або відкрити `web/index.html` локально.
 
 ### Реальний AI-аналіз
-1. Розгорнути репозиторій на Vercel.
+1. Розгорнути репозиторій на Vercel — FastAPI-застосунок підхоплюється
+   автоматично (entrypoint `app/main.py`, інстанс `app`, за документацією
+   Vercel «Deploy a FastAPI app»; maxDuration 60 с — у `vercel.json`).
 2. В налаштуваннях Vercel задати <b>одну змінну оточення: `OPENAI_API_KEY`</b>
    (сумісні провайдери: додатково `OPENAI_BASE_URL`, `OPENAI_MODEL`).
 3. Endpoint: `https://<проект>.vercel.app/api/diagnose` — вставити в поле
-   «Endpoint сервера діагностики» в демо.
+   «Endpoint сервера діагностики» в демо (перевірка: `…/health`).
+
+### Локально (FastAPI)
+```
+pip install -r requirements.txt
+uvicorn app.main:app --reload   # http://127.0.0.1:8000/docs
+python -m pytest tests/ -q      # тести бекенду (мок AI)
 
 ## Безпека й чесність
 

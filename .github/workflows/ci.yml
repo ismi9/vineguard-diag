@@ -1,4 +1,4 @@
-name: CI — валідація карток і коду
+name: CI — валідація карток, коду і бекенду
 on:
   push:
     branches: [main]
@@ -13,8 +13,6 @@ jobs:
           node-version: 20
       - name: Синтаксис JS + few-shot картки за schema
         run: |
-          node --check api/diagnose.js
-          node --check api/system_prompt.js
           node --check web/app.js
           node --check web/few_shots.js
           node -e "
@@ -30,3 +28,14 @@ jobs:
           if(f)process.exit(1);
           console.log('Few-shot картки: валідні');
           "
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Тести FastAPI-бекенду (мок AI-провайдера)
+        run: |
+          pip install -q -r requirements.txt pytest
+          python -m pytest tests/ -q

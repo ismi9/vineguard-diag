@@ -1,0 +1,32 @@
+name: CI — валідація карток і коду
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Синтаксис JS + few-shot картки за schema
+        run: |
+          node --check api/diagnose.js
+          node --check api/system_prompt.js
+          node --check web/app.js
+          node --check web/few_shots.js
+          node -e "
+          const fs=require('fs');
+          const req=JSON.parse(fs.readFileSync('schema/diagnostic_card.schema.json','utf8')).required;
+          let f=0;
+          for(const fn of fs.readdirSync('schema/few_shots')){
+            const c=JSON.parse(fs.readFileSync('schema/few_shots/'+fn,'utf8'));
+            const m=req.filter(k=>!(k in c));
+            if(m.length){console.log('FAIL',fn,m.join(','));f++;}
+            if(!['ai_draft','user_edited','confirmed_by_user'].includes(c.verification_status)){console.log('FAIL',fn,'status');f++;}
+          }
+          if(f)process.exit(1);
+          console.log('Few-shot картки: валідні');
+          "

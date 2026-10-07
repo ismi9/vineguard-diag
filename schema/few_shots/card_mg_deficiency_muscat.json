@@ -1,0 +1,24 @@
+{
+  "card_id": "demo-mg-def-002",
+  "timestamp": "2026-08-02T14:10:00Z",
+  "grape_variety": "Мускат білий (Muscat Blanc à Petits Grains)",
+  "visual_symptoms": {
+    "chlorosis": "міжжилковий хлороз на старих нижніх листках: тканина між головними жилками жовтіє, жилки лишаються зеленими",
+    "necrosis": "крайовий «обпалений» некроз пожовклих зон на найстаріших листках",
+    "spots_and_plaque": "плям і нальоту не виявлено",
+    "leaf_deformation": "без помітної деформації"
+  },
+  "diagnosis": {
+    "diseases": [],
+    "nutrient_deficiencies": [
+      { "element": "Магній (Mg)", "confidence_score": 0.88, "severity": "середня" }
+    ]
+  },
+  "recommendations": {
+    "agrotechnical": ["перевірити pH ґрунту: Mg недоступний на кислих ґрунтах", "не перевантажувати кущ врожаєм — дефіцит загострюється на перегружених кущах"],
+    "chemical_or_biological_treatment": [],
+    "fertilization": ["позакореневе підживлення сульфатом магнію (MgSO4, 2-3% розчин) 2-3 обробки з інтервалом 10-14 днів", "на кислих ґрунтах — доломітове борошно під осінню перекопку"]
+  },
+  "verification_status": "confirmed_by_user",
+  "user_notes": "Приклад few-shot: типовий міжжилковий хлороз Mg на мускаті"
+}

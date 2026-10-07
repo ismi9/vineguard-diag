@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ismi9/vineguard-diag/schema/diagnostic_card.schema.json",
+  "title": "VineGuard Diagnostic Card",
+  "description": "Структурована картка діагностики листя винограду (джерело: завдання, файл новий-2)",
+  "type": "object",
+  "required": ["card_id", "timestamp", "grape_variety", "visual_symptoms", "diagnosis", "recommendations", "verification_status"],
+  "properties": {
+    "card_id": { "type": "string", "description": "auto_or_uuid" },
+    "timestamp": { "type": "string", "format": "date-time", "description": "ISO-8601" },
+    "grape_variety": { "type": "string", "description": "Вказаний сорт або 'Невідомо'" },
+    "visual_symptoms": {
+      "type": "object",
+      "required": ["chlorosis", "necrosis", "spots_and_plaque", "leaf_deformation"],
+      "properties": {
+        "chlorosis": { "type": "string", "description": "локалізація та тип хлорозу (міжжилковий, крайовий тощо)" },
+        "necrosis": { "type": "string", "description": "опис сухих зон та некрозів" },
+        "spots_and_plaque": { "type": "string", "description": "колір, форма плям, наявність павутиноподібного чи борошнистого нальоту" },
+        "leaf_deformation": { "type": "string", "description": "скручування країв, деформація пластини" }
+      }
+    },
+    "diagnosis": {
+      "type": "object",
+      "required": ["diseases", "nutrient_deficiencies"],
+      "properties": {
+        "diseases": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "confidence_score", "stage"],
+            "properties": {
+              "name": { "type": "string", "description": "Назва хвороби (укр. та лат.)" },
+              "confidence_score": { "type": "number", "minimum": 0, "maximum": 1 },
+              "stage": { "type": "string", "enum": ["рання", "прогресуюча", "пізня"] }
+            }
+          }
+        },
+        "nutrient_deficiencies": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["element", "confidence_score", "severity"],
+            "properties": {
+              "element": { "type": "string", "description": "напр. Магній (Mg)" },
+              "confidence_score": { "type": "number", "minimum": 0, "maximum": 1 },
+              "severity": { "type": "string", "enum": ["легка", "середня", "критична"] }
+            }
+          }
+        }
+      }
+    },
+    "recommendations": {
+      "type": "object",
+      "required": ["agrotechnical", "chemical_or_biological_treatment", "fertilization"],
+      "properties": {
+        "agrotechnical": { "type": "array", "items": { "type": "string" } },
+        "chemical_or_biological_treatment": { "type": "array", "items": { "type": "string" } },
+        "fertilization": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "verification_status": { "type": "string", "enum": ["ai_draft", "user_edited", "confirmed_by_user"] },
+    "image_ref": { "type": "string", "description": "посилання на збережене зображення (опційно)" },
+    "user_notes": { "type": "string", "description": "спостереження користувача (опційно)" }
+  }
+}

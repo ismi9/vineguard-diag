@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>VineGuard Diag — діагностика листя винограду</title>
+<link rel="stylesheet" href="style.css?v=1.0.0">
+</head>
+<body>
+<header>
+  <h1>🌿 VineGuard Diag</h1>
+  <p class="sub">Діагностика хвороб і дефіцитів листя винограду · картки · база</p>
+</header>
+
+<main>
+  <!-- Крок 1: фото -->
+  <section class="card" id="step-photo">
+    <h2>1. Фото листка</h2>
+    <p class="hint">Кнопка запускає камеру або вибір файлу вручну — без автозйомки (стабільніше на мобільних).</p>
+    <div class="btn-row">
+      <button id="btn-scan" class="primary">📷 Сканувати</button>
+      <input type="file" id="file-input" accept="image/*" capture="environment" hidden>
+    </div>
+    <div id="photo-preview" class="photo-preview" hidden>
+      <img id="photo-img" alt="Фото листка">
+      <button id="btn-retake" class="ghost">Інше фото</button>
+    </div>
+    <label class="field">Сорт
+      <input id="variety" type="text" placeholder="напр. Мускат білий">
+    </label>
+    <label class="field">Спостереження (опційно)
+      <input id="notes" type="text" placeholder="де на кущі, скільки листків, погода…">
+    </label>
+  </section>
+
+  <!-- Крок 2: аналіз -->
+  <section class="card" id="step-diag" hidden>
+    <h2>2. Аналіз</h2>
+    <div class="btn-row">
+      <button id="btn-analyze" class="primary">🧪 Аналізувати</button>
+      <button id="btn-demo" class="ghost">Демо (офлайн)</button>
+    </div>
+    <label class="field small">Endpoint сервера діагностики (Vercel; порожньо = тільки демо)
+      <input id="endpoint" type="url" placeholder="https://…/api/diagnose">
+    </label>
+    <div id="status" class="status" hidden></div>
+  </section>
+
+  <!-- Крок 3: картка -->
+  <section class="card" id="step-card" hidden>
+    <h2>3. Картка діагностики</h2>
+    <p class="hint">Чи збігаються симптоми з вашими спостереженнями? Скоригуйте перед збереженням.</p>
+    <div id="card-view"></div>
+    <textarea id="card-json" rows="8" hidden></textarea>
+    <div class="btn-row">
+      <button id="btn-edit-json" class="ghost">JSON</button>
+      <button id="btn-user-edit" class="ghost">Виправлено мною</button>
+      <button id="btn-save" class="primary">💾 Зберегти до бази</button>
+    </div>
+  </section>
+
+  <!-- База карток -->
+  <section class="card" id="step-db">
+    <h2>База діагностики <span id="db-count" class="badge">0</span></h2>
+    <p class="hint">Локальна база (localStorage). У повній версії — <code>save_card_to_database()</code> на бекенді VineMind AI.</p>
+    <div class="btn-row">
+      <button id="btn-export" class="ghost">Експорт JSON</button>
+      <button id="btn-clear" class="ghost danger">Очистити</button>
+    </div>
+    <div id="db-view"></div>
+  </section>
+</main>
+
+<footer>
+  <p>VineGuard Diag v1.0.0 — результати ілюстративні, не замінюють лабораторний аналіз.
+  Дотримуйтесь інструкцій виробників ЗЗР, строків очікування та ЗІЗ.</p>
+</footer>
+
+<script src="few_shots.js?v=1.0.0"></script>
+<script src="app.js?v=1.0.0"></script>
+</body>
+</html>

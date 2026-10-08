@@ -175,7 +175,7 @@
     $('login-password').value = '';
 
     if (error) {
-      $('telegram-status').textContent = 'Не вдалося увійти. Перевірте дані.';
+      alert(`Помилка входу: ${error.message}`);
       return;
     }
 

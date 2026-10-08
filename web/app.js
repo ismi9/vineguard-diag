@@ -153,6 +153,90 @@
   $('btn-clear').addEventListener('click', () => {
     if (confirm('Очистити локальну базу карток?')) saveDb([]);
   });
+  // ---------- Спільні чернетки з Telegram ----------
+  const SUPABASE_URL = 'https://ismi9.github.io/vineguard-diag/';
+  const SUPABASE_PUBLIC_KEY = 'sb_publishable_iC1smH70S2aLH5LMJrv4ig_fXsXM9Ba';
+
+  const sb = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLIC_KEY
+  );
+
+  $('login-button').addEventListener('click', async () => {
+    const email = $('login-email').value.trim();
+    const password = $('login-password').value;
+
+    if (!email || !password) {
+      $('telegram-status').textContent = 'Введіть адресу й пароль.';
+      return;
+    }
+
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+    $('login-password').value = '';
+
+    if (error) {
+      $('telegram-status').textContent = 'Не вдалося увійти. Перевірте дані.';
+      return;
+    }
+
+    await refreshTelegramCards();
+  });
+
+  async function refreshTelegramCards() {
+    const { data: { session }, error: sessionError } =
+      await sb.auth.getSession();
+
+    const container = $('telegram-cards');
+    container.replaceChildren();
+
+    if (sessionError || !session) {
+      $('telegram-status').textContent =
+        'Увійдіть, щоб побачити картки з Telegram.';
+      return;
+    }
+
+    const { data, error } = await sb
+      .from('diagnostic_cards')
+      .select('card_id, card, created_at')
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    if (error) {
+      $('telegram-status').textContent =
+        'Не вдалося завантажити картки з бази.';
+      return;
+    }
+
+    $('telegram-status').textContent =
+      `Карток із Telegram: ${data.length}`;
+
+    for (const row of data) {
+      const item = document.createElement('article');
+      item.className = 'db-item';
+
+      const title = document.createElement('b');
+      title.textContent = row.card?.grape_variety || 'Сорт невідомий';
+
+      const details = document.createElement('div');
+      details.className = 'stage';
+      details.textContent =
+        `${row.card?.visual_symptoms?.chlorosis || 'Опис симптомів відсутній'}`
+        + ' · Чернетка, діагноз не підтверджено';
+
+      item.append(title, details);
+      container.append(item);
+    }
+  }
+
+  sb.auth.onAuthStateChange(() => {
+    // Оновлюємо список після завершення зміни стану входу.
+    setTimeout(() => { void refreshTelegramCards(); }, 0);
+  });
+
+  void refreshTelegramCards();
+  setInterval(() => {
+    if (!document.hidden) void refreshTelegramCards();
+  }, 15000);
 
   renderDb();
 })();

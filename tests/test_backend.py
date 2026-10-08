@@ -16,10 +16,16 @@ def test_root_and_health():
     assert client.get("/").json()["status"] == "ok"
     assert client.get("/health").json()["openai_key_configured"] is False
 
+def test_diagnose_without_key(monkeypatch):
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    r = client.post(
+        "/api/diagnose",
+        json={"image_base64": "data:image/jpeg;base64,QUJD"},
+    )
+    assert r.status_code == 503
+    assert r.json()["detail"] == "Не вдалося завершити аналіз фото"
 
-def test_diagnose_without_key():
-    b = client.post("/api/diagnose", json={"image_base64": "data:image/jpeg;base64,QUJD"}).json()
-    assert "OPENAI_API_KEY" in b["error"]
+
 
 
 def test_diagnose_with_mock_model():
@@ -42,7 +48,10 @@ def test_diagnose_with_mock_model():
         assert b["card"]["verification_status"] == "ai_draft"
         sent = mp.call_args.kwargs["json"]
         assert SYSTEM_PROMPT[:40] in sent["messages"][0]["content"]
-        assert "Приклади збережених карток" in sent["messages"][0]["content"]
+       assert SYSTEM_PROMPT[:40] in sent["messages"][0]["content"]
+assert "Приклади збережених карток" not in sent["messages"][0]["content"]
+assert '"card_id": "x"' not in sent["messages"][0]["content"]
+
     os.environ.pop("OPENAI_API_KEY", None)
 
 

@@ -20,7 +20,9 @@ import uuid
 from datetime import datetime, timezone
 
 import httpx
-from fastapi import FastAPI
+import hmac
+from fastapi import FastAPI, Header, HTTPException, Request
+
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
@@ -128,3 +130,28 @@ async def diagnose(payload: DiagnoseRequest):
 
     card = normalize_card(card, payload)
     return {"card": card}
+@app.post("/api/telegram")
+async def telegram_webhook(
+    request: Request,
+    x_telegram_bot_api_secret_token: str | None = Header(default=None),
+):
+    secret = os.environ.get("TELEGRAM_WEBHOOK_SECRET")
+    allowed_chat = os.environ.get("ALLOWED_TELEGRAM_CHAT_ID")
+
+    if not secret or not allowed_chat:
+        raise HTTPException(status_code=503, detail="Вебхук не налаштовано")
+
+    if not x_telegram_bot_api_secret_token or not hmac.compare_digest(
+        x_telegram_bot_api_secret_token, secret
+    ):
+        raise HTTPException(status_code=403, detail="Доступ заборонено")
+
+    update = await request.json()
+    message = update.get("message") or {}
+    chat = message.get("chat") or {}
+
+    if chat.get("type") != "private" or str(chat.get("id")) != allowed_chat:
+        return {"ok": True}
+
+    # Фото поки НЕ обробляємо. Вебхук ще не можна вмикати.
+    return {"ok": True}

@@ -58,6 +58,22 @@
       <button id="btn-save" class="primary">💾 Зберегти до бази</button>
     </div>
   </section>
+<!-- Картки, що надійшли через Telegram -->
+<section class="card" id="telegram-section">
+  <h2>Картки з Telegram</h2>
+  <p class="hint">Увійдіть, щоб переглядати свої картки на комп’ютері й телефоні. Нові висновки — чернетки, не підтверджені діагнози.</p>
+  <label class="field">Електронна адреса
+    <input id="login-email" type="email" autocomplete="email">
+  </label>
+  <label class="field">Пароль Supabase
+    <input id="login-password" type="password" autocomplete="current-password">
+  </label>
+  <div class="btn-row">
+    <button id="login-button" type="button" class="primary">Увійти</button>
+  </div>
+  <p id="telegram-status" class="hint"></p>
+  <div id="telegram-cards"></div>
+</section>
 
   <!-- База карток -->
   <section class="card" id="step-db">
@@ -76,7 +92,9 @@
   Дотримуйтесь інструкцій виробників ЗЗР, строків очікування та ЗІЗ.</p>
 </footer>
 
-<script src="few_shots.js?v=1.0.0"></script>
+<script src="few_shots.js?v=1.0.0"></script>  
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script src="app.js?v=1.0.0"></script>
 </body>
 </html>

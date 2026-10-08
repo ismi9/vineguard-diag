@@ -1,5 +1,5 @@
 """Тести FastAPI-бекенду (мок AI-провайдера, без мережі). Запуск: python -m pytest tests/ -q"""
-import json, os, sys, uuid
+import json, os, sys
 from unittest.mock import patch, AsyncMock
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -16,6 +16,7 @@ def test_root_and_health():
     assert client.get("/").json()["status"] == "ok"
     assert client.get("/health").json()["openai_key_configured"] is False
 
+
 def test_diagnose_without_key(monkeypatch):
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     r = client.post(
@@ -26,12 +27,10 @@ def test_diagnose_without_key(monkeypatch):
     assert r.json()["detail"] == "Не вдалося завершити аналіз фото"
 
 
-
-
 def test_diagnose_with_mock_model():
     card = json.load(open("schema/few_shots/card_mildew_chardonnay.json", encoding="utf-8"))
     os.environ["OPENAI_API_KEY"] = "test-key"
-    fake = {"choices": [{"message": {"content": json.dumps({**card, "verification_status": "ai_draft"}, ensure_ascii=False)}}], "model": "gpt-4o-mock"}
+    fake = {"choices": [{"message": {"content": json.dumps({**card, "verification_status": "confirmed_by_user"}, ensure_ascii=False)}}], "model": "gpt-4o-mock"}
 
     class FakeResp:
         def raise_for_status(self): pass
@@ -45,13 +44,14 @@ def test_diagnose_with_mock_model():
             "few_shots": [{"card_id": "x"}],
         })
         b = r.json()
+        # сервер завжди перезаписує статус на ai_draft (AI не може «підтвердити»)
         assert b["card"]["verification_status"] == "ai_draft"
         sent = mp.call_args.kwargs["json"]
-        assert SYSTEM_PROMPT[:40] in sent["messages"][0]["content"]
-       assert SYSTEM_PROMPT[:40] in sent["messages"][0]["content"]
-assert "Приклади збережених карток" not in sent["messages"][0]["content"]
-assert '"card_id": "x"' not in sent["messages"][0]["content"]
-
+        system_content = sent["messages"][0]["content"]
+        assert SYSTEM_PROMPT[:40] in system_content
+        # few-shots з браузера не потрапляють у промпт (можуть бути підроблені)
+        assert "Приклади збережених карток" not in system_content
+        assert '"card_id": "x"' not in json.dumps(sent, ensure_ascii=False)
     os.environ.pop("OPENAI_API_KEY", None)
 
 

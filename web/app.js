@@ -153,36 +153,34 @@
   $('btn-clear').addEventListener('click', () => {
     if (confirm('Очистити локальну базу карток?')) saveDb([]);
   });
-  // ---------- Спільні чернетки з Telegram ----------
+  // ---------- Спільні чернетки з Telegram (Supabase) ----------
+  // TODO: замінити на URL вашого проєкту Supabase (Settings → API):
+  // напр. https://<project-ref>.supabase.co
   const SUPABASE_URL = 'https://ismi9.github.io/vineguard-diag/';
   const SUPABASE_PUBLIC_KEY = 'sb_publishable_iC1smH70S2aLH5LMJrv4ig_fXsXM9Ba';
 
-  const sb = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_PUBLIC_KEY
-  );
+  function telegramSyncDisabled(reason) {
+    const status = $('telegram-status');
+    if (status) status.textContent = reason;
+    const btn = $('login-button');
+    if (btn) { btn.disabled = true; btn.textContent = 'Вхід недоступний'; }
+  }
 
-  $('login-button').addEventListener('click', async () => {
-    const email = $('login-email').value.trim();
-    const password = $('login-password').value;
-
-    if (!email || !password) {
-      $('telegram-status').textContent = 'Введіть адресу й пароль.';
-      return;
+  let sb = null;
+  if (!window.supabase) {
+    telegramSyncDisabled('Бібліотека Supabase не завантажилась (перевірте інтернет).');
+  } else if (!/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/.test(SUPABASE_URL)) {
+    telegramSyncDisabled('Telegram-синхронізація не налаштована: вкажіть URL проєкту Supabase у web/app.js (SUPABASE_URL).');
+  } else {
+    try {
+      sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLIC_KEY);
+    } catch (e) {
+      telegramSyncDisabled('Не вдалося ініціалізувати клієнт Supabase.');
     }
-
-    const { error } = await sb.auth.signInWithPassword({ email, password });
-    $('login-password').value = '';
-
-    if (error) {
-      alert(`Помилка входу: ${error.message}`);
-      return;
-    }
-
-    await refreshTelegramCards();
-  });
+  }
 
   async function refreshTelegramCards() {
+    if (!sb) return;
     const { data: { session }, error: sessionError } =
       await sb.auth.getSession();
 
@@ -228,15 +226,37 @@
     }
   }
 
-  sb.auth.onAuthStateChange(() => {
-    // Оновлюємо список після завершення зміни стану входу.
-    setTimeout(() => { void refreshTelegramCards(); }, 0);
-  });
+  if (sb) {
+    $('login-button').addEventListener('click', async () => {
+      const email = $('login-email').value.trim();
+      const password = $('login-password').value;
 
-  void refreshTelegramCards();
-  setInterval(() => {
-    if (!document.hidden) void refreshTelegramCards();
-  }, 15000);
+      if (!email || !password) {
+        $('telegram-status').textContent = 'Введіть адресу й пароль.';
+        return;
+      }
+
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+      $('login-password').value = '';
+
+      if (error) {
+        alert(`Помилка входу: ${error.message}`);
+        return;
+      }
+
+      await refreshTelegramCards();
+    });
+
+    sb.auth.onAuthStateChange(() => {
+      // Оновлюємо список після завершення зміни стану входу.
+      setTimeout(() => { void refreshTelegramCards(); }, 0);
+    });
+
+    void refreshTelegramCards();
+    setInterval(() => {
+      if (!document.hidden && sb) void refreshTelegramCards();
+    }, 15000);
+  }
 
   renderDb();
 })();

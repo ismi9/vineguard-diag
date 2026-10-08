@@ -49,3 +49,5 @@ ul { margin: 6px 0 0; padding-left: 18px; }
 textarea { width: 100%; font: 12px/1.4 monospace; border: 1px solid var(--line); border-radius: 10px; padding: 8px; margin-top: 8px; }
 footer { text-align: center; color: #7a8571; font-size: 0.75rem; padding: 12px 0 32px; }
 @media (min-width: 640px) { button { flex: 0 1 auto; } }
+
+button:disabled { opacity: 0.5; cursor: not-allowed; }

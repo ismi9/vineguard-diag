@@ -105,7 +105,8 @@ def normalize_card(card: dict, payload: DiagnoseRequest) -> dict:
     card.setdefault("card_id", f"vgd-{uuid.uuid4().hex[:8]}")
     card.setdefault("timestamp", datetime.now(timezone.utc).isoformat())
     card.setdefault("grape_variety", payload.grape_variety or "Невідомо")
-    card.setdefault("verification_status", "ai_draft")
+    card["verification_status"] = "ai_draft"
+
     if payload.user_notes:
         card.setdefault("user_notes", payload.user_notes)
     return card
